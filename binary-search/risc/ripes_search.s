@@ -51,7 +51,7 @@ LESS:
 END:
 	#set x10 as the result
 	addi x10, x13, 0
-	li a7, 1
+	addi a7, x0, 1
 	ecall
-	li a7, 10
+	addi a7, x0, 10
 	ecall

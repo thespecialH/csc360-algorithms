@@ -1,17 +1,19 @@
-array[x] = array_input;
+array = &search_array[0];
+size = sizeOf(search_array);
+term = searchTerm;
 
-search_term = search term input
+low_index = 0;
+high_index = size - 1;
+mid_index = 0;
 
-mid_value = x/2; //this will need to be an integer
-
-while (search_term != array[mid_value])
+while (term != array[mid_index])
 {
-	if (search_term < array[mid_value]) {
-		mid_value = (mid_value)/2;
+	mid_index = int[low_index + (high_index - low_index)/2];
+	if (term < array[mid_value]) {
+		high_index = mid_index - 1;
 	} else {
-		mid_value = mid_value + (x - mid_value)/2;
+		low_index = mid_index + 1;
 	}
-
 }
 
-return mid_value;
+return mid_index;
