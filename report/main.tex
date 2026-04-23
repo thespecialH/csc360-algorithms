@@ -56,7 +56,7 @@
 % manually specify the path to it like:
 % \documentclass[journal]{../sty/IEEEtran}
 
-
+\usepackage{comment}
 
 
 
@@ -358,7 +358,7 @@
 % not capitalized unless they are the first or last word of the title.
 % Linebreaks \\ can be used within to get better formatting as desired.
 % Do not put math or special symbols in the title.
-\title{The Ethics of Radio Frequencies\\in Common Use}
+\title{Performance Analysis of a Binary Search Algorithm in Assembly}
 %
 %
 % author names and IEEE memberships
@@ -426,29 +426,13 @@
 % As a general rule, do not put math, special symbols or citations
 % in the abstract or keywords.
 \begin{abstract}
-A brief overview and investigation of the current state of the ethics of the link between radio frequencies and cancer.
+A brief overview of the preformance of two versions of binary search algorithms written in RISC-V assembly: one designed for a single-cycle processor and one designed for pipelining.
 \end{abstract}
 
 
 
 
-
-
-% For peer review papers, you can put extra information on the cover
-% page as needed:
-% \ifCLASSOPTIONpeerreview
-% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}
-% \fi
-%
-% For peerreview papers, this IEEEtran command inserts a page break and
-% creates the second title. It will be ignored for other modes.
-\IEEEpeerreviewmaketitle
-
-
-
 \section{Introduction}
-% The very first letter is a 2 line initial drop letter followed
-% by the rest of the first word in caps.
 % 
 % form to use if the first word consists of a single letter:
 % \IEEEPARstart{A}{demo} file is ....
@@ -462,8 +446,55 @@ A brief overview and investigation of the current state of the ethics of the lin
 % 
 % Here we have the typical use of a "T" for an initial drop letter
 % and "HIS" in caps to complete the first word.
-\IEEEPARstart{T}{he use} of radio frequencies in many devices today raises certain ethical concerns, as the effects of these signals on humans are not fully understood, especially in the long term. This is partially because they have not seen widespread use until relatively recently, but also because studies for this kind of thing are quite difficult to design. The great variety of factors and the long timescales necessary are a challenge.
+\IEEEPARstart{I}{n} this paper the performance characteristics of two version of a binary search algorithm written in RISC-V assembly will be discussed.
 
+\section{Calculations}
+
+First, various performance factors are measured from the Ripes simulation software and the others are calculated. The measured performance metrics are shown in Figure~\ref{1perf} for the single-cycle version and Figure~\ref{pipeperf} for the pipelined version.
+
+\begin{figure}[h]
+\begin{center}
+    \includegraphics[width=7cm]{./Figures/single_cycle.png}
+    \caption{Measured performance from Ripes for the single-cycle version}
+    \label{1perf}
+\end{center}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+    \includegraphics[width=7cm]{./Figures/pipeline.png}
+    \caption{Measured performance from Ripes for the pipelined version}
+    \label{pipeperf}
+\end{center}
+\end{figure}
+
+The performance data in Table~\ref{ripes} is derived from Figure~\ref{1perf} and Figure~\ref{pipeperf}. Of course, the single-cycle processor really takes five cycles for each one cycle as measured by Ripes, and this is corrected in Table~\ref{ripes}.
+
+\begin{table}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c||c|c|}
+	\hline
+	Metric & Single-Cycle & Pipelined \\
+	\hline
+	Cycles & 260 & 80 \\
+	Number of instructions & 52 & 66 \\
+	CPI & 5 & 1.21 \\
+	\hline
+\end{tabular}
+\caption{A table of the performance metrics.}
+\label{ripes}
+\end{center}
+\end{table}
+
+\begin{comment}
+se these observations to calculate:
+– Total execution time
+– Cycles per instruction (CPI)
+– Speedup of pipelined version over non-pipelined
+\end{comment}
+
+\begin{comment}
 However, this lack of knowledge should not stop the engineer from thinking critically about the ethics of using these signals in his designs. In this paper, I aim to examine the question of whether radio frequency causes cancer and what ethical conclusions can be drawn from the current state of research about that question as well as the widespread use of such frequencies. I investigate questions about who precisely is responsible, and what should be done.
 
 \section{Does Radio Frequency Cause Cancer?}
@@ -757,6 +788,8 @@ IEEE. ``IEEE Standard for Safety Levels with Respect to Human Exposure to Electr
 \end{thebibliography}
 
 \bigskip
+
+\end{comment}
 
 \textbf{John Colton} is an Electrical Engineering student at the University of Mary in Bismarck, ND.
 
