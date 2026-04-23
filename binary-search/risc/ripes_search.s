@@ -28,8 +28,6 @@ addi x13, x0, 0
 
 
 LOOP:
-	#let's check to make sure the indices aren't backward
-	blt x21, x20, ERROR
 	#so this actually needs to compare the stuff AT the address. We'll put that in x16
 	#we find the address based on the index x13
 	sub x13, x21, x20
@@ -50,16 +48,9 @@ LESS:
 	addi x21, x13, -1
 	beq x0, x0, LOOP
 
-ERROR:
-	#set x10 to return -1 for error
-	addi x10, x0, -1
-	beq x0, x0, EXIT
-
 END:
 	#set x10 as the result
 	addi x10, x13, 0
-
-EXIT:
 	li a7, 1
 	ecall
 	li a7, 10
