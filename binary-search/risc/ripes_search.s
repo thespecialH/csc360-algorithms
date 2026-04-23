@@ -23,6 +23,9 @@ addi x21, x11, -1
 #we put the number 2 in x30
 addi x30, x0, 2
 
+#initialize the middle index to zero
+addi x13, x0, 0
+
 
 LOOP:
 	#let's check to make sure the indices aren't backward
