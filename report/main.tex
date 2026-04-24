@@ -57,6 +57,10 @@
 % \documentclass[journal]{../sty/IEEEtran}
 
 \usepackage{comment}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable}
 
 
 
@@ -426,7 +430,7 @@
 % As a general rule, do not put math, special symbols or citations
 % in the abstract or keywords.
 \begin{abstract}
-A brief overview of the preformance of two versions of binary search algorithms written in RISC-V assembly: one designed for a single-cycle processor and one designed for pipelining.
+This paper presents a description of the design, documentation, and test results of a version of the famous binary search algorithm. For this paper, the algorithm was implemented in RISC-V assembly. Two versions were created, one for a single-cycle processor and one designed for a five-stage pipelined processor with forwarding but without error or hazard detection.
 \end{abstract}
 
 
@@ -446,11 +450,70 @@ A brief overview of the preformance of two versions of binary search algorithms 
 % 
 % Here we have the typical use of a "T" for an initial drop letter
 % and "HIS" in caps to complete the first word.
-\IEEEPARstart{I}{n} this paper the performance characteristics of two version of a binary search algorithm written in RISC-V assembly will be discussed.
+\IEEEPARstart{T}{he} binary search is a classic algorithm that can be used to find specific items in sorted arrays. The basic idea is that the middle item is checked first, and then depending on whether the result is higher or lower the search index movesto the middle of either the lower or higher half of the array, respectively. This repeats until the term is found.
 
-\section{Calculations}
+\section{Design Approach}
+The author's approach to this problem revolved around a five-step process:
 
-First, various performance factors are measured from the Ripes simulation software and the others are calculated. The measured performance metrics are shown in Figure~\ref{1perf} for the single-cycle version and Figure~\ref{pipeperf} for the pipelined version.
+\begin{enumerate}
+	\item Research the algorithm
+	\item Brainstorm the logic
+	\item Create flowcharts
+	\item Create C-style pseudocode
+	\item Translate into RISC-V
+\end{enumerate}
+
+These steps were executed largely in order, although there was some bouncing between items as sometimes progress on, for instance, the pseudocode would lead to revisions in the earlier steps.
+
+\section{Research}
+
+Since the binary search algorithm is simple and common, research did not need to be very comprehensive or deep. Both Chadha, et al.\cite{paper1} and Ly\cite{paper2} had excellent descriptions of the algorithm.
+
+\section{Flowcharts}
+Three flowcharts were created: one high-level chart, one low-level chart, and one low-level chart with pipelining.
+
+\subsection{High-Level Flowchart}
+The high-level flowchart is shown in Figure~\ref{highlevelchart}. This flowchart was created to make writing C-style pseudocode in the next step easy. Therefore, the flowchart was made with C features, styles, and capabilities in mind. The flowchart uses an easy-to-read (and implement) loop structure. After the inputs are received, the middle index of the array is calculated. The value at that index is checked in the first diamond, then the second diamond checks whether the search is too high or too low. In the next step the indices are set appropriately, then the cycle repeats.
+
+\begin{figure}[h]
+\begin{center}
+    \includegraphics[width=10cm]{./Figures/high_level_flowchart.png}
+    \caption{A high-level flowchart of the algorithm.}
+    \label{highlevelchart}
+\end{center}
+\end{figure}
+
+\subsection{Low-Level Flowchart}
+The low-level flowchart is shown in Figure~\ref{lowlevelchart}. It is extremely similar to the high-level flowchart described above, with the main difference stemming from the fact that it was created with the lower-level RISC-V capabilities, features, and styles in mind. Registers were used instead of variables to make writing the RISC-V codee easier. The overall structure, however, is still the same.
+
+\begin{figure}[h]
+\begin{center}
+    \includegraphics[width=9cm]{./Figures/low_level_flowchart.png}
+    \caption{A low-level flowchart of the algorithm.}
+    \label{lowlevelchart}
+\end{center}
+\end{figure}
+
+\subsection{Pipelining Chart}
+Lastly, the pipelining flowchart is shown in Figure~\ref{pipelinechart}. The circles indicate potential hazards. In this code, data and control hazards were identified. Later on in the process, these were fixed by inserting nops.
+
+\begin{figure}[h]
+\begin{center}
+    \includegraphics[width=9cm]{./Figures/pipeline_flowchart.png}
+    \caption{A chart of the algorithm with the pipeline.}
+    \label{pipelinechart}
+\end{center}
+\end{figure}
+
+\section{Pseudocode}
+The pseudocode is attached in the appendix. It basically takes the high-level flowchart shown in Figure~\ref{highlevelchart} and creates C-style code out of those same statements. Because the flowchart was designed with this task in mind, it is not a large jump between these two items.
+
+\section{Coding}
+Both the single-cycle and pipeline versions of the RISC-V code are shown in the appendix. These are both fairly straightforward implementations of the C-style pseudocode (also in the appendix) and the low-level flowchart shown in Figure~\ref{lowlevelchart}. Because that flowchart was created with this step in mind, it almost directly translates. The pipeline chart shown in Figure~\ref{pipelinechart} was used to help identify and correct hazards in the pipelined version. Because forwarding is enabled, the only nops needed are for the control hazard after loading a value from memory and at the very end of the program to ensure the proper environment calls are placed.
+
+\section{Results}
+
+First, various performance factors were measured from the Ripes simulation software and the others were calculated. The measured performance metrics are shown in Figure~\ref{1perf} for the single-cycle version and Figure~\ref{pipeperf} for the pipelined version.
 
 \begin{figure}[h]
 \begin{center}
@@ -482,146 +545,15 @@ The performance data in Table~\ref{ripes} is derived from Figure~\ref{1perf} and
 	CPI & 5 & 1.21 \\
 	\hline
 \end{tabular}
+\vspace{2pt}
 \caption{A table of the performance metrics.}
 \label{ripes}
 \end{center}
 \end{table}
 
-\begin{comment}
-se these observations to calculate:
-– Total execution time
-– Cycles per instruction (CPI)
-– Speedup of pipelined version over non-pipelined
-\end{comment}
+The execution time, of course, depends on the clock speed of the processor. But assuming a constant clock speed between the two processors, the execution time difference is directly proportional to the number of clock cycles necessary. Since the pipelined version used 30\% of the cycles that the single-cycle version used, clearly it is much faster even though it requires more instructions. This is because the CPI is so much lower.
 
 \begin{comment}
-However, this lack of knowledge should not stop the engineer from thinking critically about the ethics of using these signals in his designs. In this paper, I aim to examine the question of whether radio frequency causes cancer and what ethical conclusions can be drawn from the current state of research about that question as well as the widespread use of such frequencies. I investigate questions about who precisely is responsible, and what should be done.
-
-\section{Does Radio Frequency Cause Cancer?}
-
-This is a difficult question. Because the mechanisms by which radio frequency might indeed cause cancer are neither entirely understood nor easily studied, a definitive answer is not yet entirely clear to us. However, radio frequencies are so ubiquitous now that it is clear that, if they did cause cancer, the cancer risk for everyone in the world would be higher. Everyone seems to own a smartphone nowadays---what if that smartphone were a cancer-causing machine?
-
-Personally, I do not believe radio frequencies are very likely to cause cancer, at least with the typical levels experienced from devices we use every day, such as smartphones and computers. The studies are simply not conclusive enough for there to be serious evidence of a direct link between typical radio frequency exposure levels and cancer. That is not to say there is no risk, however; the studies are just as inconclusive in proving the safety of radio frequencies as they are in proving the cancer risk associated with them.
-
-The American Cancer Society says, ``A number of studies have looked for a possible link between cell phones and cancer. Some studies have shown a possible link, but many others have not... The American Cancer Society (ACS) does not have an official position or statement on whether or not radiofrequency radiation from cell phones, cell phones towers, or other sources is a cause of cancer" \cite{cancersoc}.
-
-Clearly, the science is not entirely settled. This does not mean that the question is not ethically challenging, however, which leads into the topic of responsibility.
-
-\section{Responsibility}
-
-If the billions of radio-frequency-emitting devices in our pockets are also increasing our risk of cancer, the companies selling those devices would seem to be responsible. This question of responsibility, however, is much more complex. Many companies lack the resources to properly study topics as difficult as this, and must rely on regulators to tell them what is and is not safe.
-
-In the United States, the main radio frequency regulatory body is the Federal Communications Commission (FCC). The FCC, however, claims it is not responsible either. ``Federal, state and local government agencies and other organizations have generally relied on RF exposure standards developed by expert non-governmental organizations such as the Institute of Electrical and Electronics Engineers (IEEE) and the National Council on Radiation Protection and Measurements (NCRP)" \cite{fcc}. This seems reasonable, especially since, considering that the FCC is not a public health organization, it is typical for a regulatory commission to rely on experts for these kinds of questions.
-
-So is the IEEE responsible? Well, they do publish a safety standard for radio frequency exposure: IEEE Std C95.1-2019. ``The purpose of this standard is to provide science-based exposure criteria to protect against established adverse health effects in humans associated with exposure to electric, magnetic, and electromagnetic fields; induced and contact currents; and contact voltages, over the frequency range of 0 Hz to 300 GHz" \cite{itriplee}. By publishing this standard, IEEE must claim a certain amount of responsibility for public safety. This, however, does not mean that the IEEE is solely responsible.
-
-Ultimately, the company selling a product is responsible for the safety of those who use their product as intended. However, the company can claim a reasonable amount of invincible ignorance if it is following the best standard practices and guidelines arrived at by experts at organizations like the IEEE. Ideally, product creators and vendors would have a collaborative relationship with scientists and standard-setting organizations to ensure they work together towards the goal of public safety.
-
-\section{Why Study is Still Necessary}
-
-Just because companies are not solely responsible, however, does not mean they should wash their hands entirely of the matter. The truth is, the question of whether radio frequencies cause cancer is not yet entirely settled. Further, as radio-frequency-emitting devices become more common and exposure levels rise, it is more and more important to have a complete understanding of radio frequency's effects on humans.
-
-\section{The Ethics if Cell Phones Do Indeed Cause Cancer}
-\label{sec:ethicsolve}
-
-This of course begs the question of what the ethical ramifications would be if radio frequencies do in fact cause cancer. This is a very complicated question. The sheer amount of radio-frequency-emitting devices means that removing them completely from use would be very disruptive. To evaluate what exactly should happen, we can use ethical problem-solving techniques: namely, line drawing and creating flowcharts. These techniques allow us to start with scenarios that have clear ethics, and then move from their towards more difficult scenarios. We will apply each technique below.
-
-\subsection{Line Drawing}
-\label{sec:linedrawing}
-First, we need to pose the problem as a question: if it were discovered that cell phones invariably and directly cause cancer, what should happen?
-
-Next, we devise two scenarios, one clearly ethical and one clearly unethical. For the ethical scenario, or \textit{Positive Paradigm}, let us consider a scenario in which all companies voluntarily recall their cell phones and refund their customers, as well as offering to cover medical expenses due to the risk imposed. For the unethical scenario, or \textit{Negative Pardigm}, the scenario is that smartphone companies continue to sell smartphones knowing that they will give their customers cancer---and death---without fail.
-
-Lastly, we outline several scenarios that are ethically between these two paradigms.
-
-\begin{enumerate}
-    \item The government requires companies to recall their cell phones, refund their customers, and cover related medical expenses
-    \item The government requires companies to recall their cell phones and refund customers, but not cover related expenses
-    \item The companies voluntarily recall their products and refund their customers, but do not cover medical expenses
-    \item The government forbids further cell phone sales, but does not require refunds or recalls for phones already sold
-    \item The government approves of cell phone sales as long as a warning is attached
-\end{enumerate}
-
-Now we can place the scenarios relatively on a line between the Positive and Negative Paradigms. The order I propose is shown in Figure~\ref{teehee}.
-
-\begin{figure}[h]
-    \begin{center}
-        \begin{tikzpicture}
-            \draw(0,0) -- (5,0);
-            \draw (0,-0.5) -- (0,0.5);
-            \node[anchor=south] at (0,0.5) {NP};
-            \draw (5,-0.5) -- (5,0.5);
-            \node[anchor=south] at (5,0.5) {PP};
-
-            \node[anchor=north] at (0.5,-0.25) {5};
-            \draw (0.5,-0.25) -- (0.5,0.25);
-
-            \node[anchor=north] at (1.5,-0.25) {4};
-            \draw (1.5,-0.25) -- (1.5,0.25);
-            
-            \node[anchor=north] at (2.5,-0.25) {2};
-            \draw (2.5,-0.25) -- (2.5,0.25);
-            
-            \node[anchor=north] at (3.5,-0.25) {3};
-            \draw (3.5,-0.25) -- (3.5,0.25);
-            
-            \node[anchor=north] at (4.5,-0.25) {1};
-            \draw (4.5,-0.25) -- (4.5,0.25);
-            
-        \end{tikzpicture}
-    \label{teehee}
-    \end{center}
-    \caption{A line drawing of the problem: \textit{If it were discovered that cell phones invariably and directly cause cancer, what should happen?} The numbers refer to scenarios outlined in Section~\ref{sec:linedrawing}.}
-    \label{teehee}
-\end{figure}
-
-I propose this order, because I think that, in general, the more things are done voluntarily the better. Hence why the Positive Paradigm does not require government interference, and why 3) is placed above 2). In this case, where cell phones lead essentially directly to the deaths of their users, I do think that their use and use of any radio frequencies would have to be discontinued. There is, however, nuance in how quickly such a shift would occur, due to how much disruption it would cause.
-
-\subsection{Flowchart Creation}
-\label{sec:flowchartCreation}
-
-The ethical scenarios and considerations would be different if radio frequencies only increased the risk of cancer, as opposed to directly causing it. For this scenario, we can use the flowchart approach. The flowchart is shown in Figure~\ref{theflowchart}.
-
-\begin{figure}[h]
-\begin{center}
-    \includegraphics[width=7cm]{./flowchart.png}
-    \caption{A flowchart for the question: \textit{If smartphones increase the risk of cancer, should they be sold?}}
-    \label{theflowchart}
-\end{center}
-\end{figure}
-
-In this flowchart, we take the position of the company looking to sell smartphones. This is, of course, an oversimplification of the problem. Essentially, those looking to sell their smartphones must ask several ethical questions, from obvious ones such as ``Is it legal?" to more difficult ones like ``Are the risks reasonable?" Some of these involve judgment calls that reasonable people can---and will---disagree on.
-
-Both of the scenarios in this section were hypothetical, since there are not yet conclusive studies on this issue. The more pressing question is what to do right now, while we do not know the full effects.
-
-\section{The Ethics if Cell-Phone-Cancer Research is Inconclusive}
-This, of course, is the scenario we are currently in. The question is: \textit{Is it ethical to sell a product without full knowledge of the health risks it poses?} The surface-level answer is easy: of course its ethical, since we can never know everything about the health risks of every product.
-
-The real world, however, is more complicated. The magnitude of the risk matters greatly. The proportion of studies that fail to demonstrate a link between smartphone radio frequencies and cancer certainly does not prove that there is no link. However, overall, the risk that there is a substantial increase in cancer risk from these devices would seem---to the best of our knowledge---to be relatively small, as years of research still cannot prove any kind of link with cancer. In general, as long as the risk is not substantial, I believe it is ethical to sell a product without knowing in full its potential for negative health effects. I think this applies in the current smartphone case. This is not to say that thorough research into the potential harms of the product is not necessary. More study in this area is important.
-
-\section{Group Impacts: Responsibility and Injury}
-In the issue at hand, it is important to recognize the impact smartphone-caused cancer will have. First, we will consider where responsibility lies for the oversight, and then the impact the oversight will have on the public.
-
-\subsection{Responsibility}
-The responsibility for this hypothetical oversight would be shared by many, and would be analogous to the responsibility of groups currently in charge of ensuruing the safety of radio frequency devices. These groups include engineers and scientists, regulatory boards, corporations, manufacturers, and consumers. We can rank these groups from most to least responsible.
-
-The group most responsible is, of course, engineers and scientists. Engineers are the ones creating a product, and they have a duty to speak up when they believe the product they create is unsafe. Scientists researching the safety of products must report results without bias. Creating a product that is known to be harmful is never ethical. This is not to discount nuanced situations when there are certain \textit{risks} of harm that can be balanced and mitigated.
-
-Next in responsibility are corporations and manufacturers. As the business entitees selling either parts for a product or the product itself, these groups must ensure they do not offer to people something they know is harmful. They are not as responsible as engineers because engineers should not have made a harmful product in the first place, but it is the corporations' and manufacturers' responsibility to ensure they do not sell a harmful product even if their engineers develop one.
-
-Regulatory boards bear the next amount of responsibility, as they are a last stop between corporations selling potentially harmful products and the consumers. The regulatory boards, in an ideal world, would not have to exist because everyone above them would not create harmful products.
-
-Lastly, consumers bear the least responsibility. Although consumers should look out for their safety, they have a right to expect that products legally on the market are safe to use.
-
-\subsection{Consequences}
-Among the groups above, which would be injured the most by a harmful ubiquitous product like a hypothetical cancer-causing smartphone.
-
-Consumers are the obvious answer, since they have the least say in how their products function, but bear the brunt of any ill effects. Further, many consumers are not educated enough to know all the nuance of risk in a complicated device like a smartphone, so many will not have had enough knowledge to make an informed decision.
-
-Engineers, corporations, and manufacturers would all receive about the same amount of injury. Aside from the physical effects that people working in these groups would also suffer, the entities themselves would only receive injury to reputation and monetary consequences, which is not comparable to the human suffering affecting the consumers.
-
-Lastly, regulatory boards would, as entities, receive the least injury since there would not be any monetary consequences.
-
 
 
 
@@ -742,15 +674,29 @@ In conclusion, much of the ethics of this issue come down to a risk assessment. 
 % \subsection or using \label (\appendices by itself
 % starts a section numbered zero.)
 %
+\end{comment}
 
+%\appendices
 
-\appendices
+%\section{Pseudocode}
 % by themselves when using endfloat and the captionsoff option.
-\ifCLASSOPTIONcaptionsoff
-  \newpage
-\fi
+%\ifCLASSOPTIONcaptionsoff
+%  \newpage
+%\fi
 
+\appendix
 
+\begin{tcolorbox}[breakable, title={Pseudocode}]
+\lstinputlisting[language=C, breaklines=true, breakatwhitespace=true]{../binary-search/pseudocode.c}
+\end{tcolorbox}
+
+\begin{tcolorbox}[breakable, title={Single-Cycle RISC-V}]
+\lstinputlisting[breaklines=true, breakatwhitespace=true]{../binary-search/risc/ripes_search.s}
+\end{tcolorbox}
+
+\begin{tcolorbox}[breakable, title={Pipeline RISC-V}]
+\lstinputlisting[breaklines=true, breakatwhitespace=true]{../binary-search/risc/pipelined_search.s}
+\end{tcolorbox}
 
 % trigger a \newpage just before the given reference
 % number - used to balance the columns on the last page
@@ -776,20 +722,17 @@ In conclusion, much of the ethics of this issue come down to a risk assessment. 
 % (used to reserve space for the reference number labels box)
 \begin{thebibliography}{1}
 
-\bibitem{cancersoc}
-American Cancer Society. ``Radiofrequency (RF) Radiation." https://www.cancer.org/cancer/risk-prevention/radiation-exposure/radiofrequency-radiation.html, Oct. 28, 2022 (accessed Dec. 13, 2024).
+\bibitem{paper1}
+Ly, Taja. ``Binary Search and Ternary search: An Overview." https://www.researchgate.net/publication/389841259\_Binary\_Search\_and\\\_Ternary\_search\_An\_Overview, March 2024 (accessed March 27, 2026).
 
-\bibitem{fcc}
-FCC. ``Wireless Devices and Health Concerns." https://www.fcc.gov/consumers/guides/wireless-devices-and-health-concerns, Nov. 4, 2020 (accessed Dec. 13, 2024).
+\bibitem{paper2}
+Chadha, Ankit R., Misal, Rishikesh, and Mokashi, Tanaya. "Modified Binary Search Algorithm." https://arxiv.org/pdf/1406.1677, April 2014 (accessed March 27, 2026).
 
-\bibitem{itriplee}
-IEEE. ``IEEE Standard for Safety Levels with Respect to Human Exposure to Electric, Magnetic, and Electromagnetic Fields, 0 Hz to 300 GHz," in IEEE Std C95.1-2019 (Revision of IEEE Std C95.1-2005/ Incorporates IEEE Std C95.1-2019/Cor 1-2019), 4 Oct. 2019.
 
 \end{thebibliography}
 
 \bigskip
 
-\end{comment}
 
 \textbf{John Colton} is an Electrical Engineering student at the University of Mary in Bismarck, ND.
 
